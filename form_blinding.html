@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+            rel="stylesheet">
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <title>Ultra Cool Profile</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+            :root {
+                --neon-blue: #00f3ff;
+                --neon-pink: #ff00ff;
+                --neon-purple: #bc13fe;
+            }
+
+            body {
+                background-color: #000;
+                font-family: 'Orbitron', sans-serif;
+                color: #fff;
+                overflow-x: hidden;
+                background: linear-gradient(45deg, #000, #1a1a2e);
+                min-height: 100vh;
+                position: relative;
+            }
+
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: 
+                    radial-gradient(circle at 20% 35%, rgba(188, 19, 254, 0.2) 0%, transparent 40%),
+                    radial-gradient(circle at 75% 44%, rgba(0, 243, 255, 0.2) 0%, transparent 40%);
+                pointer-events: none;
+            }
+
+            .cyberpunk-container {
+                background: rgba(0, 0, 0, 0.7);
+                border: 1px solid var(--neon-blue);
+                box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+                backdrop-filter: blur(10px);
+                border-radius: 15px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .cyberpunk-container::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: linear-gradient(
+                    45deg,
+                    transparent 0%,
+                    rgba(0, 243, 255, 0.1) 50%,
+                    transparent 100%
+                );
+                animation: shine 3s infinite;
+            }
+
+            @keyframes shine {
+                0% { transform: translateY(-100%) translateX(-100%); }
+                100% { transform: translateY(100%) translateX(100%); }
+            }
+
+            .neon-text {
+                color: var(--neon-blue);
+                text-shadow: 0 0 5px var(--neon-blue),
+                           0 0 10px var(--neon-blue),
+                           0 0 20px var(--neon-blue);
+                letter-spacing: 2px;
+            }
+
+            .form-control {
+                background: rgba(0, 0, 0, 0.7);
+                border: 1px solid var(--neon-blue);
+                color: #fff;
+                transition: all 0.3s ease;
+            }
+
+            .form-control:focus {
+                background: rgba(0, 0, 0, 0.8);
+                border-color: var(--neon-pink);
+                box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+                transform: translateY(-2px);
+            }
+
+            .cyber-button {
+                background: transparent;
+                border: 2px solid var(--neon-blue);
+                color: var(--neon-blue);
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                padding: 15px 30px;
+                position: relative;
+                overflow: hidden;
+                transition: all 0.3s ease;
+                z-index: 1;
+            }
+
+            .cyber-button::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(0, 243, 255, 0.2),
+                    transparent
+                );
+                transition: 0.5s;
+                z-index: -1;
+            }
+
+            .cyber-button:hover::before {
+                left: 100%;
+            }
+
+            .cyber-button:hover {
+                background: var(--neon-blue);
+                color: #000;
+                box-shadow: 0 0 20px var(--neon-blue);
+                transform: translateY(-3px);
+            }
+
+            .power-card {
+                background: rgba(0, 0, 0, 0.7);
+                border: 1px solid var(--neon-purple);
+                transition: all 0.3s ease;
+                cursor: pointer;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .power-card::before {
+                content: '';
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(45deg, transparent, rgba(188, 19, 254, 0.1), transparent);
+                transform: translateY(100%);
+                transition: 0.5s;
+            }
+
+            .power-card:hover::before {
+                transform: translateY(0);
+            }
+
+            .power-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 5px 20px rgba(188, 19, 254, 0.3);
+            }
+
+            .power-card.selected {
+                border: 2px solid var(--neon-pink);
+                box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+            }
+
+            .interest-chip {
+                background: rgba(0, 0, 0, 0.7);
+                border: 1px solid var(--neon-blue);
+                padding: 8px 15px;
+                border-radius: 20px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .interest-chip:hover {
+                background: var(--neon-blue);
+                color: #000;
+            }
+
+            .interest-chip.selected {
+                background: var(--neon-pink);
+                border-color: var(--neon-pink);
+                color: #000;
+                box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+            }
+
+            .profile-image {
+                width: 200px;
+                height: 200px;
+                border-radius: 20px;
+                position: relative;
+                overflow: hidden;
+                border: 2px solid var(--neon-blue);
+                box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
+            }
+
+            .profile-mockup {
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(45deg, var(--neon-purple), var(--neon-blue));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 4rem;
+                color: #000;
+                text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .profile-mockup::before {
+                content: '';
+                position: absolute;
+                width: 150%;
+                height: 150%;
+                background: linear-gradient(
+                    transparent,
+                    rgba(255, 255, 255, 0.2),
+                    transparent
+                );
+                transform: rotate(45deg);
+                animation: shine-profile 3s infinite;
+            }
+
+            @keyframes shine-profile {
+                0% { transform: rotate(45deg) translateY(-100%); }
+                100% { transform: rotate(45deg) translateY(100%); }
+            }
+
+            .stat-box {
+                background: rgba(0, 0, 0, 0.7);
+                border: 1px solid var(--neon-purple);
+                padding: 15px;
+                border-radius: 10px;
+                text-align: center;
+                transition: all 0.3s ease;
+            }
+
+            .stat-box:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 5px 15px rgba(188, 19, 254, 0.3);
+            }
+
+            .loading-screen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: #000;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+
+            .cyber-spinner {
+                width: 100px;
+                height: 100px;
+                border: 4px solid transparent;
+                border-top: 4px solid var(--neon-blue);
+                border-right: 4px solid var(--neon-pink);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+
+            .cyber-spinner::before {
+                content: '';
+                position: absolute;
+                top: -4px;
+                left: -4px;
+                right: -4px;
+                bottom: -4px;
+                border: 4px solid transparent;
+                border-top: 4px solid var(--neon-purple);
+                border-radius: 50%;
+                animation: spin 2s linear infinite;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            .glitch-text {
+                position: relative;
+                animation: glitch 2s infinite;
+            }
+
+            @keyframes glitch {
+                0% { transform: translate(0); }
+                20% { transform: translate(-2px, 2px); }
+                40% { transform: translate(-2px, -2px); }
+                60% { transform: translate(2px, 2px); }
+                80% { transform: translate(2px, -2px); }
+                100% { transform: translate(0); }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <div class="container py-5">
+                <h1
+                    class="text-center mb-5 neon-text glitch-text animate__animated animate__fadeInDown">
+                    CYBER PROFILE CREATOR
+                </h1>
+
+                <!-- Form Section -->
+                <form v-show="!showProfile"
+                    class="cyberpunk-container p-4 animate__animated animate__fadeInUp">
+                    <div class="row g-4">
+                        <!-- Name Field -->
+                        <div class="col-md-6">
+                            <label class="neon-text">CODENAME</label>
+                            <input type="text"
+                                class="form-control"
+                                v-model="formData.name"
+                                placeholder="Enter your codename">
+                        </div>
+
+                        <!-- Email Field -->
+                        <div class="col-md-6">
+                            <label class="neon-text">NEURAL LINK</label>
+                            <input type="email"
+                                class="form-control"
+                                v-model="formData.email"
+                                placeholder="your@neural.link">
+                        </div>
+
+                        <!-- Bio Field -->
+                        <div class="col-12">
+                            <label class="neon-text">BACKSTORY</label>
+                            <textarea
+                                class="form-control"
+                                v-model="formData.bio"
+                                placeholder="Tell us your story, cyberpunk..."
+                                rows="3"></textarea>
+                        </div>
+
+                        <!-- Location Field -->
+                        <div class="col-md-6">
+                            <label class="neon-text">BASE LOCATION</label>
+                            <input type="text"
+                                class="form-control"
+                                v-model="formData.location"
+                                placeholder="Where do you operate?">
+                        </div>
+
+                        <!-- Power Selection -->
+                        <div class="col-12">
+                            <label class="neon-text mb-3">SELECT YOUR
+                                AUGMENTATION</label>
+                            <div class="row g-3">
+                                <div class="col-md-4" v-for="power in powers">
+                                    <div
+                                        class="power-card p-3 rounded-3 text-center"
+                                        :class="{'selected': formData.power === power.name}"
+                                        @click="formData.power = power.name">
+                                        <div class="fs-1 mb-2">{{ power.icon
+                                            }}</div>
+                                        <h5 class="neon-text">{{ power.name
+                                            }}</h5>
+                                        <p class="small mb-0">{{
+                                            power.description }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interests -->
+                        <div class="col-12">
+                            <label class="neon-text mb-3">SKILL MATRIX</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <div v-for="interest in interests"
+                                    class="interest-chip"
+                                    :class="{'selected': formData.interests.includes(interest.name)}"
+                                    @click="toggleInterest(interest.name)">
+                                    {{ interest.icon }} {{ interest.name }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-5">
+                        <button type="submit"
+                            class="cyber-button"
+                            @click.prevent="onSubmit">
+                            INITIALIZE PROFILE
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Profile Card -->
+                <div v-show="showProfile"
+                    class="cyberpunk-container p-4 animate__animated animate__fadeInDown">
+                    <div class="text-center">
+                        <div class="profile-image mx-auto mb-4">
+                            <div class="profile-mockup">
+                                {{ formData.name.charAt(0) }}
+                            </div>
+                        </div>
+
+                        <h2 class="neon-text mb-3">{{ formData.name }}</h2>
+                        <p class="mb-1">{{ formData.email }}</p>
+                        <p class="mb-4">📍 {{ formData.location }}</p>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="stat-box">
+                                    <div class="neon-text">AUGMENTATION</div>
+                                    <div>{{ formData.power }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-box">
+                                    <div class="neon-text">SKILL COUNT</div>
+                                    <div>{{ formData.interests.length }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-box">
+                                    <div class="neon-text">STATUS</div>
+                                    <div>ACTIVE</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cyberpunk-container p-4 mb-4">
+                            <h5 class="neon-text mb-3">NEURAL IMPRINT</h5>
+                            <p class="mb-0">{{ formData.bio }}</p>
+                        </div>
+
+                        <div class="cyberpunk-container p-4 mb-4">
+                            <h5 class="neon-text mb-3">SKILL MATRIX</h5>
+                            <div
+                                class="d-flex flex-wrap justify-content-center gap-2">
+                                <div v-for="interest in formData.interests"
+                                    class="interest-chip">
+                                    {{ interest }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <button @click="editProfile"
+                            class="cyber-button">
+                            RECONFIGURE PROFILE
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loading Screen -->
+                <div v-if="loading"
+                    class="loading-screen animate__animated animate__fadeIn">
+                    <div class="position-relative">
+                        <div class="cyber-spinner"></div>
+                        <div
+                            class="position-absolute top-50 start-50 translate-middle neon-text">
+                            {{ loadingMessage }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const app = Vue.createApp({
+                setup() {
+                    const showProfile = Vue.ref(false);
+                    const loading = Vue.ref(false);
+                    const loadingMessage = Vue.ref('');
+                    
+                    const powers = [
+                        { 
+                            name: 'QUANTUM SPEED', 
+                            icon: '⚡',
+                            description: 'Break the time barrier'
+                        },
+                        { 
+                            name: 'TITAN FORCE', 
+                            icon: '💪',
+                            description: 'Reshape reality with pure strength'
+                        },
+                        { 
+                            name: 'NEURAL HACK', 
+                            icon: '🧠',
+                            description: 'Command minds at will'
+                        }
+                    ];
+
+                    const interests = [
+                        { name: 'HACKING', icon: '💻' },
+                        { name: 'COMBAT', icon: '⚔️' },
+                        { name: 'STEALTH', icon: '🥷' },
+                        { name: 'TECH', icon: '🔧' },
+                        { name: 'NETRUNNER', icon: '🌐' },
+                        { name: 'MEDIC', icon: '💉' },
+                        { name: 'PILOT', icon: '🚀' },
+                        { name: 'ENGINEER', icon: '⚡' }
+                    ];
+
+                    const formData = Vue.ref({
+                        name: '',
+                        email: '',
+                        bio: '',
+                        location: '',
+                        power: 'QUANTUM SPEED',
+                        interests: []
+                    });
+
+                    const loadingMessages = [
+                        'INITIALIZING NEURAL INTERFACE',
+                        'SCANNING BIOMETRIC DATA',
+                        'COMPILING PROFILE MATRIX',
+                        'SYNCHRONIZING QUANTUM DATABASE',
+                        'ESTABLISHING NEURAL LINK'
+                    ];
+
+                    const toggleInterest = (interest) => {
+                        const index = formData.value.interests.indexOf(interest);
+                        if (index === -1) {
+                            if (formData.value.interests.length < 4) {
+                                formData.value.interests.push(interest);
+                            } else {
+                                alert('Maximum 4 skills allowed!');
+                            }
+                        } else {
+                            formData.value.interests.splice(index, 1);
+                        }
+                    };
+
+                    const updateLoadingMessage = () => {
+                        let index = 0;
+                        const interval = setInterval(() => {
+                            loadingMessage.value = loadingMessages[index];
+                            index = (index + 1) % loadingMessages.length;
+                        }, 500);
+                        return interval;
+                    };
+
+                    const onSubmit = async () => {
+                        if (!formData.value.name || !formData.value.email) {
+                            alert('CRITICAL ERROR: Required fields missing!');
+                            return;
+                        }
+
+                        loading.value = true;
+                        const messageInterval = updateLoadingMessage();
+                        
+                        // Simulate loading with multiple steps
+                        await new Promise(resolve => setTimeout(resolve, 2500));
+                        
+                        clearInterval(messageInterval);
+                        loading.value = false;
+                        showProfile.value = true;
+                    };
+
+                    const editProfile = () => {
+                        showProfile.value = false;
+                    };
+
+                    return {
+                        formData,
+                        showProfile,
+                        loading,
+                        loadingMessage,
+                        powers,
+                        interests,
+                        toggleInterest,
+                        onSubmit,
+                        editProfile
+                    };
+                }
+            }).mount('#app');
+        </script>
+    </body>
+</html>

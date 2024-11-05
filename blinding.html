@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+            crossorigin="anonymous">
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <title>blinding</title>
+    </head>
+
+    <body>
+        <div id="app">
+            <div class="container">
+                <form class="row g-3">
+                    <div class="col-md-6">
+                        <label for="inputEmail4"
+                            class="form-label">Email</label>
+                        <input type="email" class="form-control"
+                            id="inputEmail4" v-model="email">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="inputPassword4"
+                            class="form-label">Password</label>
+                        <input type="password" class="form-control"
+                            id="inputPassword4" v-model="password">
+                    </div>
+                    <div class="col-12">
+                        <label for="inputAddress"
+                            class="form-label">Address</label>
+                        <input type="text" class="form-control"
+                            id="inputAddress" v-model="address">
+                    </div>
+                    <div class="col-12">
+                        <label for="inputAddress2" class="form-label">Address
+                            2</label>
+                        <input type="text" class="form-control"
+                            id="inputAddress2" v-model="address2">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="inputCity" class="form-label">City</label>
+                        <input type="text" class="form-control" id="inputCity"
+                            v-model="city">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="inputState" class="form-label">State</label>
+                        <select id="inputState" class="form-select"
+                            v-model="state">
+                            <option value=>Choose...</option>
+                            <option value="AL">Alabama</option>
+                            <option value="AK">Alaska</option>
+                            <option value="AZ">Arizona</option>
+                            <option value="AR">Arkansas</option>
+                            <option value="CA">California</option>
+
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="inputZip" class="form-label">Zip</label>
+                        <input type="text" class="form-control" id="inputZip"
+                            v-model="zip">
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox"
+                                id="gridCheck" v-model="checkbox">
+                            <label class="form-check-label" for="gridCheck">
+                                Check me out
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary"
+                            @click.prevent="onSubmit">Sign in</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            const app = Vue.createApp({
+                setup() {
+                    const email = Vue.ref('');
+                    const password = Vue.ref('');
+                    const address = Vue.ref('');
+                    const address2 = Vue.ref('');
+                    const city = Vue.ref('');
+                    const state = Vue.ref('');
+                    const zip = Vue.ref('');
+                    const checkbox = Vue.ref(false);
+
+                    const onSubmit = () => {
+                        // Form validation
+                        if (!email.value || !password.value || !address.value || !city.value || !state.value || !zip.value) {
+                            alert('Please fill in all required fields');
+                            return;
+                        }
+
+                        // Email validation
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(email.value)) {
+                            alert('Please enter a valid email address');
+                            return;
+                        }
+
+                        // Zip code validation
+                        const zipRegex = /^\d{5}(-\d{4})?$/;
+                        if (!zipRegex.test(zip.value)) {
+                            alert('Please enter a valid ZIP code');
+                            return;
+                        }
+
+                        console.log({
+                            email: email.value,
+                            password: password.value,
+                            address: address.value,
+                            address2: address2.value,
+                            city: city.value,
+                            state: state.value,
+                            zip: zip.value,
+                            checkbox: checkbox.value
+                        });
+                    };
+
+                    return {
+                        email,
+                        password,
+                        address,
+                        address2,
+                        city,
+                        state,
+                        zip,
+                        checkbox,
+                        onSubmit
+                    };
+                }
+            }).mount('#app');
+        </script>
+    </body>
+</html>
