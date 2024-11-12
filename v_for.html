@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Pokédex</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        :root {
+            --pokeball-red: #FF1C1C;
+            --pokeball-white: #f0f0f0;
+            --poke-yellow: #ffcb05;
+            --poke-blue: #3b4cca;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            font-family: 'Arial', sans-serif;
+            color: #ffffff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 10% 20%, transparent 20%, rgba(255, 28, 28, 0.03) 21%),
+                radial-gradient(circle at 90% 80%, transparent 20%, rgba(59, 76, 202, 0.03) 21%),
+                linear-gradient(135deg, #1e1e1e, #2a2a2a);
+            z-index: -1;
+        }
+
+        .header {
+            background: var(--pokeball-red);
+            padding: 20px 0;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 5px solid var(--poke-yellow);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: var(--pokeball-white);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: var(--pokeball-white);
+            border: 15px solid var(--pokeball-red);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .pokemon-title {
+            font-family: 'Press Start 2P', cursive;
+            color: var(--poke-yellow);
+            text-shadow: 3px 3px var(--poke-blue);
+            font-size: 2.5rem;
+            margin: 20px 0;
+            position: relative;
+            z-index: 3;
+        }
+
+        .search-container {
+            position: relative;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .search-box {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 3px solid var(--poke-yellow);
+            border-radius: 25px;
+            padding: 15px 20px;
+            color: #ffffff;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            background-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(255, 203, 5, 0.6);
+            border-color: var(--poke-blue);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--poke-yellow);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-50%); }
+            50% { transform: translateY(-65%); }
+        }
+
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 2px solid var(--poke-yellow);
+            color: var(--poke-yellow);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--poke-yellow);
+            color: #000;
+        }
+
+        .pokemon-card {
+            background: linear-gradient(145deg, #2a2a2a, #3a3a3a);
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            transition: all 0.4s ease;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 30px;
+            border: 3px solid transparent;
+        }
+
+        .pokemon-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+            border-color: var(--poke-yellow);
+        }
+
+        .pokemon-image-container {
+            position: relative;
+            padding-top: 100%;
+            background: radial-gradient(circle at center, #3a3a3a, #2a2a2a);
+            overflow: hidden;
+        }
+
+        .pokemon-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.4s ease;
+            padding: 20px;
+        }
+
+        .pokemon-card:hover .pokemon-image {
+            transform: scale(1.1);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .pokemon-info {
+            padding: 20px;
+            background: rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .pokemon-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--poke-yellow), var(--poke-blue));
+        }
+
+        .pokemon-name {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
+            color: var(--poke-yellow);
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 2px 2px rgba(0,0,0,0.5);
+        }
+
+        .pokemon-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .stat {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #ffffff;
+        }
+
+        .stat div:first-child {
+            color: var(--poke-yellow);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .type-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin: 0 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .type-badge::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .pokemon-id {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            color: var(--poke-yellow);
+            border: 2px solid var(--poke-yellow);
+        }
+
+        .loading-animation {
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--poke-yellow), var(--poke-blue));
+            position: fixed;
+            top: 0;
+            left: 0;
+            animation: loading 2s infinite;
+            z-index: 1000;
+        }
+
+        .stats-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-top: 5px;
+        }
+
+        .stats-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: var(--poke-yellow);
+            transition: width 1s ease;
+        }
+
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .sort-container {
+            margin: 20px 0;
+            text-align: right;
+        }
+
+        select.sort-select {
+            background: rgba(255,255,255,0.1);
+            color: var(--poke-yellow);
+            border: 2px solid var(--poke-yellow);
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        select.sort-select option {
+            background: #2a2a2a;
+            color: var(--poke-yellow);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            font-family: 'Press Start 2P', cursive;
+            color: var(--poke-yellow);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="loading-animation" v-if="loading"></div>
+        
+        <div class="header">
+            <h1 class="text-center pokemon-title">Pokédex</h1>
+        </div>
+
+        <div class="container py-5">
+            <div class="search-container mb-4">
+                <input 
+                    type="text" 
+                    class="form-control search-box" 
+                    v-model="searchQuery"
+                    placeholder="ค้นหาโปเกมอน..."
+                >
+                <i class="fas fa-search search-icon"></i>
+            </div>
+
+            <div class="filters">
+                <button 
+                    v-for="type in uniqueTypes" 
+                    :key="type"
+                    class="filter-btn"
+                    :class="{ active: selectedTypes.includes(type) }"
+                    @click="toggleType(type)"
+                >
+                    {{ type }}
+                </button>
+            </div>
+
+            <div class="sort-container">
+                <select v-model="sortBy" class="sort-select">
+                    <option value="id">เรียงตามหมายเลข</option>
+                    <option value="name">เรียงตามชื่อ</option>
+                    <option value="hp">เรียงตาม HP</option>
+                    <option value="attack">เรียงตามพลังโจมตี</option>
+                </select>
+            </div>
+
+            <div v-if="filteredPokemon.length === 0" class="no-results">
+                <p>ไม่พบโปเกมอนที่ค้นหา</p>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 col-md-6" v-for="pokemon in sortedPokemon" :key="pokemon.id">
+                    <div class="pokemon-card">
+                        <div class="pokemon-id">#{{ pokemon.id.toString().padStart(3, '0') }}</div>
+                        <div class="pokemon-image-container">
+                            <img :src="pokemon.image" class="pokemon-image" :alt="pokemon.name">
+                        </div>
+                        <div class="pokemon-info">
+                            <h3 class="pokemon-name">{{ pokemon.name }}</h3>
+                            <div class="d-flex justify-content-center flex-wrap">
+                                <span 
+                                    v-for="type in pokemon.types" 
+                                    :key="type"
+                                    class="type-badge me-2 mb-2"
+                                    :style="getTypeColor(type)"
+                                >
+                                    {{ type }}
+                                </span>
+                            </div>
+                            <div class="pokemon-stats">
+                                <div class="stat">
+                                    <div>HP</div>
+                                    <div>{{ pokemon.stats.hp }}</div>
+                                    <div class="stats-bar">
+                                        <div class="stats-bar-fill" :style="{ width: (pokemon.stats.hp / 255 * 100) + '%' }"></div>
+                                    </div>
+                                </div>
+                                <div class="stat">
+                                    <div>ATK</div>
+                                    <div>{{ pokemon.stats.attack }}</div>
+                                    <div class="stats-bar">
+                                        <div class="stats-bar-fill" :style="{ width: (pokemon.stats.attack / 255 * 100) + '%' }"></div>
+                                    </div>
+                                </div>
+                                <div class="stat">
+                                    <div>DEF</div>
+                                    <div>{{ pokemon.stats.defense }}</div><div class="stats-bar"></div>
+                                        <div class="stats-bar-fill" :style="{ width: (pokemon.stats.defense / 255 * 100) + '%' }"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    searchQuery: '',
+                    loading: true,
+                    selectedTypes: [],
+                    sortBy: 'id',
+                    pokemonList: [
+                        {
+                            id: 25,
+                            name: 'Pikachu',
+                            types: ['Electric'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png',
+                            stats: { hp: 35, attack: 55, defense: 40 }
+                        },
+                        {
+                            id: 6,
+                            name: 'Charizard',
+                            types: ['Fire', 'Flying'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png',
+                            stats: { hp: 78, attack: 84, defense: 78 }
+                        },
+                        {
+                            id: 1,
+                            name: 'Bulbasaur',
+                            types: ['Grass', 'Poison'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png',
+                            stats: { hp: 45, attack: 49, defense: 49 }
+                        },
+                        {
+                            id: 150,
+                            name: 'Mewtwo',
+                            types: ['Psychic'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/150.png',
+                            stats: { hp: 106, attack: 110, defense: 90 }
+                        },
+                        {
+                            id: 149,
+                            name: 'Dragonite',
+                            types: ['Dragon', 'Flying'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/149.png',
+                            stats: { hp: 91, attack: 134, defense: 95 }
+                        },
+                        {
+                            id: 143,
+                            name: 'Snorlax',
+                            types: ['Normal'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/143.png',
+                            stats: { hp: 160, attack: 110, defense: 65 }
+                        },
+                        {
+                            id: 3,
+                            name: 'Venusaur',
+                            types: ['Grass', 'Poison'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/3.png',
+                            stats: { hp: 80, attack: 82, defense: 83 }
+                        },
+                        {
+                            id: 9,
+                            name: 'Blastoise',
+                            types: ['Water'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/9.png',
+                            stats: { hp: 79, attack: 83, defense: 100 }
+                        },
+                        {
+                            id: 130,
+                            name: 'Gyarados',
+                            types: ['Water', 'Flying'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png',
+                            stats: { hp: 95, attack: 125, defense: 79 }
+                        },
+                        {
+                            id: 94,
+                            name: 'Gengar',
+                            types: ['Ghost', 'Poison'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png',
+                            stats: { hp: 60, attack: 65, defense: 60 }
+                        },
+                        {
+                            id: 59,
+                            name: 'Arcanine',
+                            types: ['Fire'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/59.png',
+                            stats: { hp: 90, attack: 110, defense: 80 }
+                        },
+                        {
+                            id: 131,
+                            name: 'Lapras',
+                            types: ['Water', 'Ice'],
+                            image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/131.png',
+                            stats: { hp: 130, attack: 85, defense: 80 }
+                        }
+                    ]
+                }
+            },
+            computed: {
+                uniqueTypes() {
+                    const types = new Set();
+                    this.pokemonList.forEach(pokemon => {
+                        pokemon.types.forEach(type => types.add(type));
+                    });
+                    return Array.from(types);
+                },
+                filteredPokemon() {
+                    return this.pokemonList.filter(pokemon => {
+                        const matchesSearch = pokemon.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        const matchesType = this.selectedTypes.length === 0 || 
+                            pokemon.types.some(type => this.selectedTypes.includes(type));
+                        return matchesSearch && matchesType;
+                    });
+                },
+                sortedPokemon() {
+                    return [...this.filteredPokemon].sort((a, b) => {
+                        switch(this.sortBy) {
+                            case 'name':
+                                return a.name.localeCompare(b.name);
+                            case 'hp':
+                                return b.stats.hp - a.stats.hp;
+                            case 'attack':
+                                return b.stats.attack - a.stats.attack;
+                            default:
+                                return a.id - b.id;
+                        }
+                    });
+                }
+            },
+            methods: {
+                toggleType(type) {
+                    const index = this.selectedTypes.indexOf(type);
+                    if (index === -1) {
+                        this.selectedTypes.push(type);
+                    } else {
+                        this.selectedTypes.splice(index, 1);
+                    }
+                },
+                getTypeColor(type) {
+                    const colors = {
+                        'Electric': { backgroundColor: '#F8D030' },
+                        'Fire': { backgroundColor: '#F08030' },
+                        'Water': { backgroundColor: '#6890F0' },
+                        'Grass': { backgroundColor: '#78C850' },
+                        'Flying': { backgroundColor: '#A890F0' },
+                        'Poison': { backgroundColor: '#A040A0' },
+                        'Psychic': { backgroundColor: '#F85888' },
+                        'Normal': { backgroundColor: '#A8A878' },
+                        'Dragon': { backgroundColor: '#7038F8' },
+                        'Ghost': { backgroundColor: '#705898' },
+                        'Ice': { backgroundColor: '#98D8D8' }
+                    }
+                    return {
+                        ...colors[type],
+                        color: '#FFFFFF',
+                    }
+                }
+            },
+            mounted() {
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1500);
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
