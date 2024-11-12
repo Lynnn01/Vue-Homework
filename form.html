@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ลงทะเบียน</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+            rel="stylesheet">
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <!-- AOS CSS and JS -->
+        <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+        <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        
+        .form-container, .profile-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 3rem;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .form-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
+        }
+
+        .section-title {
+            position: relative;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            text-align: center;
+            font-weight: 600;
+            color: #2C3E50;
+        }
+
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(to right, #FF6B6B, #4ECDC4);
+            border-radius: 2px;
+        }
+        
+        .form-group {
+            position: relative;
+            margin-bottom: 1.8rem;
+        }
+
+        .form-control {
+            height: 55px;
+            padding: 0.75rem 1.2rem;
+            border-radius: 12px;
+            border: 2px solid #e1e1e1;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-control:focus {
+            border-color: #4ECDC4;
+            box-shadow: 0 0 0 0.2rem rgba(78, 205, 196, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .form-label {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: white;
+            padding: 0 10px;
+            color: #2C3E50;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus + .form-label {
+            color: #4ECDC4;
+            font-weight: 600;
+            transform: scale(1.05);
+        }
+
+        textarea.form-control {
+            height: auto;
+            min-height: 100px;
+        }
+
+        .phone-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .country-select {
+            width: 120px;
+            height: 55px;
+            border-radius: 12px;
+            border: 2px solid #e1e1e1;
+            background: white;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .country-select:focus {
+            border-color: #4ECDC4;
+            box-shadow: 0 0 0 0.2rem rgba(78, 205, 196, 0.25);
+        }
+        
+        .btn-submit {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border: none;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .profile-header {
+            position: relative;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .profile-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1.5rem;
+            border: 4px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .profile-image:hover {
+            transform: scale(1.05) rotate(5deg);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .profile-detail {
+            background: rgba(78, 205, 196, 0.1);
+            border-radius: 15px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            border-left: 4px solid #4ECDC4;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-detail::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: rgba(78, 205, 196, 0.1);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+
+        .profile-detail:hover {
+            transform: translateX(5px);
+            background: rgba(78, 205, 196, 0.2);
+        }
+
+        .profile-detail:hover::before {
+            width: 100%;
+        }
+
+        .invalid-feedback {
+            margin-left: 12px;
+            margin-top: 5px;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .form-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .form-icon {
+            font-size: 1.5rem;
+            color: #4ECDC4;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-section:hover .form-icon {
+            transform: scale(1.2) rotate(360deg);
+            transition: all 0.5s ease;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4ECDC4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Ripple effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple:after {
+            content: "";
+            background: rgba(255, 255, 255, 0.3);
+            display: block;
+            position: absolute;
+            border-radius: 50%;
+            padding-top: 240%;
+            padding-left: 240%;
+            margin-top: -120%;
+            margin-left: -120%;
+            opacity: 0;
+            transition: all 1s;
+        }
+
+        .ripple:active:after {
+            padding-top: 0;
+            padding-left: 0;
+            margin-top: 0;
+            margin-left: 0;
+            opacity: 1;
+            transition: 0s;
+        }
+
+        /* Progress indicator */
+        .progress-container {
+            width: 100%;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #FF8B8B, #6ECDC4);
+        }
+    </style>
+    </head>
+    <body>
+        <div id="app" class="container">
+            <!-- Loading Overlay -->
+            <div v-if="isLoading" class="loading-overlay">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <!-- Registration Form -->
+            <div v-if="!isSubmitted" class="form-container" data-aos="fade-up">
+                <h2 class="section-title" data-aos="fade-down">ลงทะเบียน</h2>
+
+                <!-- Progress Bar -->
+                <div class="progress-container" data-aos="fade-right">
+                    <div class="progress-bar"
+                        :style="{ width: formProgress + '%' }"></div>
+                </div>
+
+                <form @submit.prevent="submitForm" class="needs-validation"
+                    novalidate>
+                    <!-- Personal Information Section -->
+                    <div class="form-section" data-aos="fade-up"
+                        data-aos-delay="100">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-user form-icon"></i>
+                            <h4>ข้อมูลส่วนตัว</h4>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6" data-aos="fade-right"
+                                data-aos-delay="200">
+                                <div class="form-group">
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        v-model="formData.firstname"
+                                        :class="{'is-invalid': errors.firstname}"
+                                        required
+                                        @focus="handleFocus"
+                                        @blur="handleBlur">
+                                    <label class="form-label">ชื่อ</label>
+                                    <div
+                                        class="invalid-feedback">กรุณากรอกชื่อ</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" data-aos="fade-left"
+                                data-aos-delay="200">
+                                <div class="form-group">
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        v-model="formData.lastname"
+                                        :class="{'is-invalid': errors.lastname}"
+                                        required
+                                        @focus="handleFocus"
+                                        @blur="handleBlur">
+                                    <label class="form-label">นามสกุล</label>
+                                    <div
+                                        class="invalid-feedback">กรุณากรอกนามสกุล</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" data-aos="fade-up"
+                            data-aos-delay="300">
+                            <label class="form-label">เบอร์โทร</label>
+                            <div class="phone-input-group">
+                                <select class="country-select"
+                                    v-model="selectedCountryCode">
+                                    <option value="+66">🇹🇭 +66</option>
+                                    <option value="+1">🇺🇸 +1</option>
+                                    <option value="+44">🇬🇧 +44</option>
+                                    <option value="+81">🇯🇵 +81</option>
+                                    <option value="+82">🇰🇷 +82</option>
+                                    <option value="+86">🇨🇳 +86</option>
+                                </select>
+                                <input
+                                    type="tel"
+                                    class="form-control"
+                                    v-model="phoneNumber"
+                                    :class="{'is-invalid': errors.phone}"
+                                    placeholderplaceholder="812345678"
+                                    required
+                                    @focus="handleFocus"
+                                    @blur="handleBlur">
+                            </div>
+                            <div
+                                class="invalid-feedback">กรุณากรอกเบอร์โทรให้ถูกต้อง</div>
+                        </div>
+                    </div>
+
+                    <!-- Identification Section -->
+                    <div class="form-section" data-aos="fade-up"
+                        data-aos-delay="400">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-id-card form-icon"></i>
+                            <h4>ข้อมูลยืนยันตัวตน</h4>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6" data-aos="fade-right"
+                                data-aos-delay="500">
+                                <div class="form-group">
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        v-model="formData.studentId"
+                                        :class="{'is-invalid': errors.studentId}"
+                                        required
+                                        maxlength="10"
+                                        @focus="handleFocus"
+                                        @blur="handleBlur">
+                                    <label
+                                        class="form-label">รหัสนักศึกษา</label>
+                                    <div
+                                        class="invalid-feedback">กรุณากรอกรหัสนักศึกษา
+                                        10 หลัก</div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6" data-aos="fade-left"
+                                data-aos-delay="500">
+                                <div class="form-group">
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        v-model="formData.idCard"
+                                        :class="{'is-invalid': errors.idCard}"
+                                        required
+                                        maxlength="13"
+                                        @focus="handleFocus"
+                                        @blur="handleBlur">
+                                    <label
+                                        class="form-label">หมายเลขบัตรประชาชน</label>
+                                    <div
+                                        class="invalid-feedback">กรุณากรอกหมายเลขบัตรประชาชน
+                                        13 หลัก</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Section -->
+                    <div class="form-section" data-aos="fade-up"
+                        data-aos-delay="600">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-envelope form-icon"></i>
+                            <h4>ข้อมูลการติดต่อ</h4>
+                        </div>
+
+                        <div class="form-group" data-aos="fade-up"
+                            data-aos-delay="700">
+                            <input
+                                type="email"
+                                class="form-control"
+                                v-model="formData.email"
+                                :class="{'is-invalid': errors.email}"
+                                required
+                                @focus="handleFocus"
+                                @blur="handleBlur">
+                            <label class="form-label">อีเมล</label>
+                            <div
+                                class="invalid-feedback">กรุณากรอกอีเมลให้ถูกต้อง</div>
+                        </div>
+
+                        <div class="form-group" data-aos="fade-up"
+                            data-aos-delay="800">
+                            <textarea
+                                class="form-control"
+                                v-model="formData.address"
+                                :class="{'is-invalid': errors.address}"
+                                required
+                                @focus="handleFocus"
+                                @blur="handleBlur"></textarea>
+                            <label class="form-label">ที่อยู่</label>
+                            <div class="invalid-feedback">กรุณากรอกที่อยู่</div>
+                        </div>
+                    </div>
+
+                    <div class="text-center" data-aos="zoom-in"
+                        data-aos-delay="900">
+                        <button type="submit"
+                            class="btn btn-submit btn-lg ripple">
+                            <i class="fas fa-check-circle me-2"></i>ลงทะเบียน
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Profile Page -->
+            <div v-else class="profile-container">
+                <div class="profile-header" data-aos="fade-down">
+                    <img src="https://i.pravatar.cc/200" alt="Profile"
+                        class="profile-image">
+                    <h2 class="section-title">ข้อมูลส่วนตัว</h2>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6" data-aos="fade-right"
+                        data-aos-delay="100">
+                        <div class="profile-detail"
+                            @click="copyToClipboard(formData.firstname)">
+                            <i class="fas fa-user me-2"></i>
+                            <strong>ชื่อ:</strong> {{ formData.firstname }}
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-left"
+                        data-aos-delay="100">
+                        <div class="profile-detail"
+                            @click="copyToClipboard(formData.lastname)">
+                            <i class="fas fa-user me-2"></i>
+                            <strong>นามสกุล:</strong> {{ formData.lastname }}
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-right"
+                        data-aos-delay="200">
+                        <div class="profile-detail"
+                            @click="copyToClipboard(formData.phone)">
+                            <i class="fas fa-phone me-2"></i>
+                            <strong>เบอร์โทร:</strong> {{ formData.phone }}
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-left"
+                        data-aos-delay="200">
+                        <div class="profile-detail"
+                            @click="copyToClipboard(formData.studentId)">
+                            <i class="fas fa-id-card me-2"></i>
+                            <strong>รหัสนักศึกษา:</strong> {{ formData.studentId
+                            }}
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-right"
+                        data-aos-delay="300">
+                        <div class="profile-detail"
+                            @click="copyToClipboard(formData.idCard)">
+                            <i class="fas fa-id-badge me-2"></i>
+                            <strong>เลขบัตรประชาชน:</strong> {{ formData.idCard
+                            }}
+                        </div>
+                    </div>
+                    <div class="col-md-6" data-aos="fade-left"
+                        data-aos-delay="300">
+                        <div class="profile-detail"
+                            @click="copyToClipboard(formData.email)">
+                            <i class="fas fa-envelope me-2"></i>
+                            <strong>อีเมล:</strong> {{ formData.email }}
+                        </div>
+                    </div>
+                    <div class="col-12" data-aos="fade-up" data-aos-delay="400">
+                        <div class="profile-detail"
+                            @click="copyToClipboard(formData.address)">
+                            <i class="fas fa-home me-2"></i>
+                            <strong>ที่อยู่:</strong> {{ formData.address }}
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-4" data-aos="zoom-in"
+                    data-aos-delay="500">
+                    <button @click="confirmEdit" class="btn btn-submit ripple">
+                        <i class="fas fa-edit me-2"></i>แก้ไขข้อมูล
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    isSubmitted: false,
+                    isLoading: false,
+                    selectedCountryCode: '+66',
+                    phoneNumber: '',
+                    formData: {
+                        firstname: '',
+                        lastname: '',
+                        phone: '',
+                        studentId: '',
+                        idCard: '',
+                        email: '',
+                        address: ''
+                    },
+                    errors: {
+                        firstname: false,
+                        lastname: false,
+                        phone: false,
+                        studentId: false,
+                        idCard: false,
+                        email: false,
+                        address: false
+                    }
+                }
+            },
+            computed: {
+                formProgress() {
+                    let fields = ['firstname', 'lastname', 'phone', 'studentId', 'idCard', 'email', 'address'];
+                    let filledFields = fields.filter(field => this.formData[field].length > 0);
+                    return Math.round((filledFields.length / fields.length) * 100);
+                }
+            },
+            watch: {
+                phoneNumber(newVal) {
+                    this.phoneNumber = newVal.replace(/[^\d]/g, '');
+                    this.formData.phone = this.selectedCountryCode + this.phoneNumber;
+                },
+                selectedCountryCode() {
+                    this.formData.phone = this.selectedCountryCode + this.phoneNumber;
+                }
+            },
+            mounted() {
+                AOS.init({
+                    duration: 1000,
+                    once: true,
+                    mirror: false,
+                    offset: 50
+                });
+            },
+            methods: {
+                handleFocus(event) {
+                    event.target.parentElement.classList.add('focused');
+                },
+                handleBlur(event) {
+                    event.target.parentElement.classList.remove('focused');
+                },
+                validateForm() {
+                    let isValid = true;
+                    
+                    Object.keys(this.errors).forEach(key => {
+                        this.errors[key] = false;
+                    });
+
+                    if (!this.formData.firstname.trim()) {
+                        this.errors.firstname = true;
+                        isValid = false;
+                    }
+
+                    if (!this.formData.lastname.trim()) {
+                        this.errors.lastname = true;
+                        isValid = false;
+                    }
+
+                    if (!/^\+\d{1,3}\d{9}$/.test(this.formData.phone)) {
+                        this.errors.phone = true;
+                        isValid = false;
+                    }
+
+                    if (!/^\d{10}$/.test(this.formData.studentId)) {
+                        this.errors.studentId = true;
+                        isValid = false;
+                    }
+
+                    if (!/^\d{13}$/.test(this.formData.idCard)) {
+                        this.errors.idCard = true;
+                        isValid = false;
+                    }
+
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(this.formData.email)) {
+                        this.errors.email = true;
+                        isValid = false;
+                    }
+
+                    if (!this.formData.address.trim()) {
+                        this.errors.address = true;
+                        isValid = false;
+                    }
+
+                    if (!isValid) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'ข้อมูลไม่ถูกต้อง',
+                            text: 'กรุณาตรวจสอบข้อมูลที่กรอกให้ถูกต้อง',
+                            confirmButtonText: 'ตกลง',
+                            confirmButtonColor: '#FF6B6B'
+                        });
+                    }
+
+                    return isValid;
+                },
+                async submitForm() {
+                    if (this.validateForm()) {
+                        this.isLoading = true;
+                        
+                        // Simulate API call
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+                        
+                        this.isLoading = false;
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ลงทะเบียนสำเร็จ',
+                            text: 'ข้อมูลของคุณถูกบันทึกเรียบร้อยแล้ว',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+
+                        setTimeout(() => {
+                            this.isSubmitted = true;
+                            // Reinitialize AOS for profile page
+                            setTimeout(() => {
+                                AOS.refresh();
+                            }, 100);
+                        }, 1500);
+                    }
+                },
+                confirmEdit() {
+                    Swal.fire({
+                        title: 'ต้องการแก้ไขข้อมูล?',
+                        text: "คุณต้องการกลับไปแก้ไขข้อมูลใช่หรือไม่",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#4ECDC4',
+                        cancelButtonColor: '#FF6B6B',
+                        confirmButtonText: 'ใช่, แก้ไขข้อมูล',
+                        cancelButtonText: 'ยกเลิก'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.isSubmitted = false;
+                            // Reinitialize AOS for form
+                            setTimeout(() => {
+                                AOS.refresh();
+                            }, 100);
+                        }
+                    });
+                },
+                copyToClipboard(text) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'คัดลอกข้อมูลแล้ว',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    });
+                }
+            }
+        }).mount('#app')
+        </script>
+    </body>
+</html>
