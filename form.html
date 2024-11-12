@@ -15,35 +15,110 @@
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
             rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <!-- AOS CSS and JS -->
         <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
         <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
 
+        :root {
+            --primary-gradient: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+            --secondary-gradient: linear-gradient(45deg, #6B5B95 0%, #FF6B6B 100%);
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --glass-shadow: rgba(31, 38, 135, 0.37);
+        }
+
         body {
             font-family: 'Kanit', sans-serif;
-            background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+            background: var(--primary-gradient);
             min-height: 100vh;
             padding: 2rem 0;
+            position: relative;
+            overflow-x: hidden;
         }
-        
+
+        /* Floating Bubbles Background */
+        .bubbles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            width: 40px;
+            height: 40px;
+            background: var(--glass-bg);
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: rise 15s infinite ease-in;
+        }
+
+        .bubble:nth-child(1) { left: 10%; width: 40px; height: 40px; animation-duration: 8s; }
+        .bubble:nth-child(2) { left: 20%; width: 60px; height: 60px; animation-duration: 10s; animation-delay: 1s; }
+        .bubble:nth-child(3) { left: 35%; width: 30px; height: 30px; animation-duration: 7s; animation-delay: 2s; }
+        .bubble:nth-child(4) { left: 50%; width: 50px; height: 50px; animation-duration: 11s; animation-delay: 0s; }
+        .bubble:nth-child(5) { left: 65%; width: 35px; height: 35px; animation-duration: 6s; animation-delay: 1s; }
+        .bubble:nth-child(6) { left: 80%; width: 45px; height: 45px; animation-duration: 8s; animation-delay: 3s; }
+        .bubble:nth-child(7) { left: 90%; width: 25px; height: 25px; animation-duration: 7s; animation-delay: 2s; }
+
+        @keyframes rise {
+            0% {
+                bottom: -100px;
+                transform: translateX(0) rotate(0deg);
+            }
+            50% {
+                transform: translateX(100px) rotate(180deg);
+            }
+            100% {
+                bottom: 1080px;
+                transform: translateX(-200px) rotate(360deg);
+            }
+        }
+
         .form-container, .profile-container {
             max-width: 900px;
             margin: 2rem auto;
             padding: 3rem;
             border-radius: 30px;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            background: var(--glass-bg);
+            box-shadow: 0 8px 32px 0 var(--glass-shadow);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            border: 1px solid var(--glass-border);
             transform: translateY(0);
-            transition: all 0.3s ease;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before, .profile-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transition: 0.8s;
+        }
+
+        .form-container:hover::before, .profile-container:hover::before {
+            left: 100%;
         }
 
         .form-container:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 15px 45px 0 rgba(31, 38, 135, 0.4);
         }
 
         .section-title {
@@ -53,9 +128,11 @@
             text-align: center;
             font-weight: 600;
             color: #2C3E50;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
-        .section-title:after {
+        .section-title::after {
             content: '';
             position: absolute;
             bottom: 0;
@@ -63,13 +140,61 @@
             transform: translateX(-50%);
             width: 100px;
             height: 4px;
-            background: linear-gradient(to right, #FF6B6B, #4ECDC4);
+            background: var(--primary-gradient);
             border-radius: 2px;
         }
-        
-        .form-group {
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 4px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+            animation: titlePulse 2s infinite;
+        }
+
+        @keyframes titlePulse {
+            0% { width: 30px; }
+            50% { width: 100px; }
+            100% { width: 30px; }
+        }
+
+        .form-section {
             position: relative;
-            margin-bottom: 1.8rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            border-left: 4px solid transparent;
+        }
+
+        .form-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.5s ease;
+        }
+
+        .form-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #4ECDC4;
+        }
+
+        .form-section:hover::before {
+            transform: scaleX(1);
         }
 
         .form-control {
@@ -78,14 +203,16 @@
             border-radius: 12px;
             border: 2px solid #e1e1e1;
             font-size: 1rem;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background: rgba(255, 255, 255, 0.9);
+            color: #2C3E50;
         }
 
         .form-control:focus {
             border-color: #4ECDC4;
-            box-shadow: 0 0 0 0.2rem rgba(78, 205, 196, 0.25);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
             transform: translateY(-2px);
+            outline: none;
         }
 
         .form-label {
@@ -97,6 +224,7 @@
             color: #2C3E50;
             font-weight: 500;
             transition: all 0.3s ease;
+            font-size: 0.9rem;
         }
 
         .form-control:focus + .form-label {
@@ -105,33 +233,8 @@
             transform: scale(1.05);
         }
 
-        textarea.form-control {
-            height: auto;
-            min-height: 100px;
-        }
-
-        .phone-input-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .country-select {
-            width: 120px;
-            height: 55px;
-            border-radius: 12px;
-            border: 2px solid #e1e1e1;
-            background: white;
-            padding: 0.75rem;
-            transition: all 0.3s ease;
-        }
-
-        .country-select:focus {
-            border-color: #4ECDC4;
-            box-shadow: 0 0 0 0.2rem rgba(78, 205, 196, 0.25);
-        }
-        
         .btn-submit {
-            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            background: var(--primary-gradient);
             border: none;
             padding: 1rem 2rem;
             font-weight: 600;
@@ -140,8 +243,29 @@
             border-radius: 12px;
             transition: all 0.3s ease;
             color: white;
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
         }
-        
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(45deg);
+            z-index: -1;
+            animation: glowingEffect 3s infinite;
+        }
+
+        @keyframes glowingEffect {
+            0% { transform: rotate(45deg) translateX(-100%); }
+            100% { transform: rotate(45deg) translateX(100%); }
+        }
+
         .btn-submit:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
@@ -155,6 +279,10 @@
             position: relative;
             margin-bottom: 3rem;
             text-align: center;
+            padding: 2rem;
+            border-radius: 20px;
+            background: linear-gradient(145deg, #ffffff, #f3f3f3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
         .profile-image {
@@ -165,12 +293,37 @@
             margin-bottom: 1.5rem;
             border: 4px solid white;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .profile-image::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            z-index: -1;
+            opacity: 0;
+            transition: all 0.5s ease;
         }
 
         .profile-image:hover {
             transform: scale(1.05) rotate(5deg);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .profile-image:hover::after {
+            opacity: 0.3;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         .profile-detail {
@@ -178,37 +331,131 @@
             border-radius: 15px;
             padding: 1.2rem;
             margin-bottom: 1rem;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border-left: 4px solid #4ECDC4;
             cursor: pointer;
             position: relative;
             overflow: hidden;
         }
 
-        .profile-detail::before {
+        .profile-detail:hover {
+            transform: translateX(10px) scale(1.02);
+            background: rgba(78, 205, 196, 0.2);
+            box-shadow: 0 5px 15px rgba(78, 205, 196, 0.2);
+        }
+
+        .profile-detail::after {
             content: '';
             position: absolute;
-            left: 0;
             top: 0;
-            height: 100%;
-            width: 0;
-            background: rgba(78, 205, 196, 0.1);
-            transition: all 0.3s ease;
-            z-index: -1;
-        }
-
-        .profile-detail:hover {
-            transform: translateX(5px);
-            background: rgba(78, 205, 196, 0.2);
-        }
-
-        .profile-detail:hover::before {
+            left: 0;
             width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.6), transparent 70%);
+            transform: translateX(-100%);
+            transition: 0.5s;
         }
 
-        .invalid-feedback {
-            margin-left: 12px;
-            margin-top: 5px;
+        .profile-detail:hover::after {
+            transform: translateX(100%);
+        }
+
+        .form-icon {
+            font-size: 1.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: all 0.5s ease;
+            display: inline-block;
+        }
+
+        .form-section:hover .form-icon {
+            transform: scale(1.2) rotate(360deg);
+            filter: drop-shadow(0 0 2px rgba(78, 205, 196, 0.5));
+        }
+
+        .progress-container {
+            position: relative;
+            width: 100%;
+            height: 10px;
+            background: rgba(241, 241, 241, 0.5);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary-gradient);
+            border-radius: 10px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255,0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid transparent;
+            border-radius: 50%;
+            position: relative;
+            animation: rotate 1s linear infinite;
+        }
+
+        .loading-spinner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            background: conic-gradient(transparent 0%, var(--primary-gradient));
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #fff 0);
+            animation: glow 2s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes glow {
+            0% { filter: drop-shadow(0 0 2px #4ECDC4); }
+            50% { filter: drop-shadow(0 0 10px #FF6B6B); }
+            100% { filter: drop-shadow(0 0 2px #4ECDC4); }
+        }
+
+        .shake {
             animation: shake 0.5s ease-in-out;
         }
 
@@ -218,124 +465,38 @@
             75% { transform: translateX(5px); }
         }
 
-        .form-section {
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .form-section:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        }
-
-        .form-icon {
-            font-size: 1.5rem;
-            color: #4ECDC4;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-section:hover .form-icon {
-            transform: scale(1.2) rotate(360deg);
-            transition: all 0.5s ease;
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #4ECDC4;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Ripple effect */
-        .ripple {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .ripple:after {
-            content: "";
-            background: rgba(255, 255, 255, 0.3);
-            display: block;
-            position: absolute;
-            border-radius: 50%;
-            padding-top: 240%;
-            padding-left: 240%;
-            margin-top: -120%;
-            margin-left: -120%;
-            opacity: 0;
-            transition: all 1s;
-        }
-
-        .ripple:active:after {
-            padding-top: 0;
-            padding-left: 0;
-            margin-top: 0;
-            margin-left: 0;
-            opacity: 1;
-            transition: 0s;
-        }
-
-        /* Progress indicator */
-        .progress-container {
-            width: 100%;
-            background-color: #f1f1f1;
-            border-radius: 10px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 8px;
-            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
-            border-radius: 10px;
-            transition: width 0.5s ease-in-out;
-        }
-
-        /* Custom scrollbar */
+        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 10px;
         }
 
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
             border-radius: 5px;
         }
 
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
         ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(45deg, #FF8B8B, #6ECDC4);
+            background: var(--secondary-gradient);
         }
     </style>
     </head>
     <body>
+        <div class="bubbles">
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+            <div class="bubble"></div>
+        </div>
+
         <div id="app" class="container">
             <!-- Loading Overlay -->
             <div v-if="isLoading" class="loading-overlay">
@@ -373,7 +534,8 @@
                                         :class="{'is-invalid': errors.firstname}"
                                         required
                                         @focus="handleFocus"
-                                        @blur="handleBlur">
+                                        @blur="handleBlur"
+                                        @input="updateProgress">
                                     <label class="form-label">ชื่อ</label>
                                     <div
                                         class="invalid-feedback">กรุณากรอกชื่อ</div>
@@ -390,7 +552,8 @@
                                         :class="{'is-invalid': errors.lastname}"
                                         required
                                         @focus="handleFocus"
-                                        @blur="handleBlur">
+                                        @blur="handleBlur"
+                                        @input="updateProgress">
                                     <label class="form-label">นามสกุล</label>
                                     <div
                                         class="invalid-feedback">กรุณากรอกนามสกุล</div>
@@ -403,7 +566,8 @@
                             <label class="form-label">เบอร์โทร</label>
                             <div class="phone-input-group">
                                 <select class="country-select"
-                                    v-model="selectedCountryCode">
+                                    v-model="selectedCountryCode"
+                                    @change="updateProgress">
                                     <option value="+66">🇹🇭 +66</option>
                                     <option value="+1">🇺🇸 +1</option>
                                     <option value="+44">🇬🇧 +44</option>
@@ -416,10 +580,11 @@
                                     class="form-control"
                                     v-model="phoneNumber"
                                     :class="{'is-invalid': errors.phone}"
-                                    placeholderplaceholder="812345678"
+                                    placeholder="812345678"
                                     required
                                     @focus="handleFocus"
-                                    @blur="handleBlur">
+                                    @blur="handleBlur"
+                                    @input="updateProgress">
                             </div>
                             <div
                                 class="invalid-feedback">กรุณากรอกเบอร์โทรให้ถูกต้อง</div>
@@ -446,7 +611,8 @@
                                         required
                                         maxlength="10"
                                         @focus="handleFocus"
-                                        @blur="handleBlur">
+                                        @blur="handleBlur"
+                                        @input="updateProgress">
                                     <label
                                         class="form-label">รหัสนักศึกษา</label>
                                     <div
@@ -466,11 +632,12 @@
                                         required
                                         maxlength="13"
                                         @focus="handleFocus"
-                                        @blur="handleBlur">
+                                        @blur="handleBlur"
+                                        @input="updateProgress">
                                     <label
-                                        class="form-label">หมายเลขบัตรประชาชน</label>
+                                        class="form-label">เลขบัตรประชาชน</label>
                                     <div
-                                        class="invalid-feedback">กรุณากรอกหมายเลขบัตรประชาชน
+                                        class="invalid-feedback">กรุณากรอกเลขบัตรประชาชน
                                         13 หลัก</div>
                                 </div>
                             </div>
@@ -494,7 +661,8 @@
                                 :class="{'is-invalid': errors.email}"
                                 required
                                 @focus="handleFocus"
-                                @blur="handleBlur">
+                                @blur="handleBlur"
+                                @input="updateProgress">
                             <label class="form-label">อีเมล</label>
                             <div
                                 class="invalid-feedback">กรุณากรอกอีเมลให้ถูกต้อง</div>
@@ -508,7 +676,8 @@
                                 :class="{'is-invalid': errors.address}"
                                 required
                                 @focus="handleFocus"
-                                @blur="handleBlur"></textarea>
+                                @blur="handleBlur"
+                                @input="updateProgress"></textarea>
                             <label class="form-label">ที่อยู่</label>
                             <div class="invalid-feedback">กรุณากรอกที่อยู่</div>
                         </div>
@@ -516,8 +685,7 @@
 
                     <div class="text-center" data-aos="zoom-in"
                         data-aos-delay="900">
-                        <button type="submit"
-                            class="btn btn-submit btn-lg ripple">
+                        <button type="submit" class="btn btn-submit btn-lg">
                             <i class="fas fa-check-circle me-2"></i>ลงทะเบียน
                         </button>
                     </div>
@@ -593,7 +761,7 @@
                 </div>
                 <div class="text-center mt-4" data-aos="zoom-in"
                     data-aos-delay="500">
-                    <button @click="confirmEdit" class="btn btn-submit ripple">
+                    <button @click="confirmEdit" class="btn btn-submit">
                         <i class="fas fa-edit me-2"></i>แก้ไขข้อมูล
                     </button>
                 </div>
@@ -633,8 +801,7 @@
             computed: {
                 formProgress() {
                     let fields = ['firstname', 'lastname', 'phone', 'studentId', 'idCard', 'email', 'address'];
-                    let filledFields = fields.filter(field => this.formData[field].length > 0);
-                    return Math.round((filledFields.length / fields.length) * 100);
+                    let filledFields = fields.filter(field => this.formData[field].length > 0);return Math.round((filledFields.length / fields.length) * 100);
                 }
             },
             watch: {
@@ -651,66 +818,124 @@
                     duration: 1000,
                     once: true,
                     mirror: false,
-                    offset: 50
+                    offset: 50,
+                    easing: 'ease-out-cubic'
+                });
+
+                // Add custom animation class to form sections
+                const sections = document.querySelectorAll('.form-section');
+                sections.forEach((section, index) => {
+                    setTimeout(() => {
+                        section.classList.add('show');
+                    }, index * 200);
                 });
             },
             methods: {
                 handleFocus(event) {
-                    event.target.parentElement.classList.add('focused');
+                    const parent = event.target.closest('.form-group');
+                    if (parent) {
+                        parent.classList.add('focused');
+                        // Add subtle scale animation
+                        event.target.style.transform = 'scale(1.02)';
+                    }
                 },
                 handleBlur(event) {
-                    event.target.parentElement.classList.remove('focused');
+                    const parent = event.target.closest('.form-group');
+                    if (parent) {
+                        parent.classList.remove('focused');
+                        // Remove scale animation
+                        event.target.style.transform = 'scale(1)';
+                    }
+                },
+                updateProgress() {
+                    // Progress bar animation is handled by computed property
+                    // Add subtle feedback animation
+                    const progressBar = document.querySelector('.progress-bar');
+                    if (progressBar) {
+                        progressBar.classList.add('shake');
+                        setTimeout(() => {
+                            progressBar.classList.remove('shake');
+                        }, 500);
+                    }
                 },
                 validateForm() {
                     let isValid = true;
                     
+                    // Reset errors
                     Object.keys(this.errors).forEach(key => {
                         this.errors[key] = false;
                     });
 
+                    // Validate firstname
                     if (!this.formData.firstname.trim()) {
                         this.errors.firstname = true;
                         isValid = false;
                     }
 
+                    // Validate lastname
                     if (!this.formData.lastname.trim()) {
                         this.errors.lastname = true;
                         isValid = false;
                     }
 
+                    // Validate phone
                     if (!/^\+\d{1,3}\d{9}$/.test(this.formData.phone)) {
                         this.errors.phone = true;
                         isValid = false;
                     }
 
+                    // Validate student ID
                     if (!/^\d{10}$/.test(this.formData.studentId)) {
                         this.errors.studentId = true;
                         isValid = false;
                     }
 
+                    // Validate ID card
                     if (!/^\d{13}$/.test(this.formData.idCard)) {
                         this.errors.idCard = true;
                         isValid = false;
                     }
 
+                    // Validate email
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!emailRegex.test(this.formData.email)) {
                         this.errors.email = true;
                         isValid = false;
                     }
 
+                    // Validate address
                     if (!this.formData.address.trim()) {
                         this.errors.address = true;
                         isValid = false;
                     }
 
                     if (!isValid) {
+                        // Show error with enhanced animation
                         Swal.fire({
                             icon: 'error',
                             title: 'ข้อมูลไม่ถูกต้อง',
                             text: 'กรุณาตรวจสอบข้อมูลที่กรอกให้ถูกต้อง',
                             confirmButtonText: 'ตกลง',
-                            confirmButtonColor: '#FF6B6B'
+                            confirmButtonColor: '#FF6B6B',
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInDown'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutUp'
+                            }
+                        });
+
+                        // Add shake animation to invalid fields
+                        Object.keys(this.errors).forEach(key => {
+                            if (this.errors[key]) {
+                                const element = document.querySelector(`[v-model="formData.${key}"]`);
+                                if (element) {
+                                    element.classList.add('shake');
+                                    setTimeout(() => {
+                                        element.classList.remove('shake');
+                                    }, 500);
+                                }
+                            }
                         });
                     }
 
@@ -720,26 +945,31 @@
                     if (this.validateForm()) {
                         this.isLoading = true;
                         
-                        // Simulate API call
+                        // Simulate API call with enhanced loading animation
                         await new Promise(resolve => setTimeout(resolve, 1500));
                         
                         this.isLoading = false;
                         
-                        Swal.fire({
+                        // Show success message with enhanced animation
+                        await Swal.fire({
                             icon: 'success',
                             title: 'ลงทะเบียนสำเร็จ',
                             text: 'ข้อมูลของคุณถูกบันทึกเรียบร้อยแล้ว',
                             showConfirmButton: false,
-                            timer: 1500
+                            timer: 1500,
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInDown'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutUp'
+                            }
                         });
 
+                        // Transition to profile page with animation
+                        this.isSubmitted = true;
                         setTimeout(() => {
-                            this.isSubmitted = true;
-                            // Reinitialize AOS for profile page
-                            setTimeout(() => {
-                                AOS.refresh();
-                            }, 100);
-                        }, 1500);
+                            AOS.refresh();
+                        }, 100);
                     }
                 },
                 confirmEdit() {
@@ -751,11 +981,16 @@
                         confirmButtonColor: '#4ECDC4',
                         cancelButtonColor: '#FF6B6B',
                         confirmButtonText: 'ใช่, แก้ไขข้อมูล',
-                        cancelButtonText: 'ยกเลิก'
+                        cancelButtonText: 'ยกเลิก',
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInDown'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOutUp'
+                        }
                     }).then((result) => {
                         if (result.isConfirmed) {
                             this.isSubmitted = false;
-                            // Reinitialize AOS for form
                             setTimeout(() => {
                                 AOS.refresh();
                             }, 100);
@@ -770,12 +1005,18 @@
                             toast: true,
                             position: 'top-end',
                             showConfirmButton: false,
-                            timer: 1500
+                            timer: 1500,
+                            showClass: {
+                                popup: 'animate__animated animate__fadeInRight'
+                            },
+                            hideClass: {
+                                popup: 'animate__animated animate__fadeOutRight'
+                            }
                         });
                     });
                 }
             }
         }).mount('#app')
-        </script>
+    </script>
     </body>
 </html>
