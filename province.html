@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ระบบจัดการข้อมูลที่อยู่</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+            rel="stylesheet">
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </head>
+    <body>
+        <div id="app" class="container mt-4">
+            <!-- Navigation -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+                <div class="container-fluid">
+                    <span class="navbar-brand">ระบบจัดการข้อมูลที่อยู่</span>
+                    <div class="d-flex">
+                        <button v-if="!isLoggedIn" @click="showLoginForm = true"
+                            class="btn btn-outline-primary me-2">เข้าสู่ระบบ</button>
+                        <button v-if="!isLoggedIn"
+                            @click="showRegisterForm = true"
+                            class="btn btn-primary">ลงทะเบียน</button>
+                        <div v-if="isLoggedIn"
+                            class="d-flex align-items-center">
+                            <span class="me-3">สวัสดี, {{ username }}</span>
+                            <button @click="logout"
+                                class="btn btn-outline-danger">ออกจากระบบ</button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Loading Indicator -->
+            <div v-if="loading"
+                class="position-fixed top-50 start-50 translate-middle">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">กำลังโหลด...</span>
+                </div>
+            </div>
+
+            <!-- Register Modal -->
+            <div v-if="showRegisterForm" class="modal d-block" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">ลงทะเบียน</h5>
+                            <button @click="closeRegisterForm"
+                                class="btn-close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form @submit.prevent="register">
+                                <div class="mb-3">
+                                    <label class="form-label">ชื่อผู้ใช้</label>
+                                    <input v-model="registerForm.username"
+                                        type="text" class="form-control"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">รหัสผ่าน</label>
+                                    <input v-model="registerForm.password"
+                                        type="password" class="form-control"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">อีเมล</label>
+                                    <input v-model="registerForm.email"
+                                        type="email" class="form-control"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">จังหวัด</label>
+                                    <select v-model="registerForm.province"
+                                        @change="loadDistrictsForRegister"
+                                        class="form-select" required>
+                                        <option value>เลือกจังหวัด</option>
+                                        <option v-for="province in provinces"
+                                            :key="province" :value="province">
+                                            {{ province }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">อำเภอ</label>
+                                    <select v-model="registerForm.district"
+                                        @change="loadSubDistrictsForRegister"
+                                        class="form-select" required
+                                        :disabled="!registerForm.province">
+                                        <option value>เลือกอำเภอ</option>
+                                        <option
+                                            v-for="district in districtsForRegister"
+                                            :key="district" :value="district">
+                                            {{ district }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ตำบล</label>
+                                    <select v-model="registerForm.sub_district"
+                                        class="form-select"
+                                        required
+                                        :disabled="!registerForm.district">
+                                        <option value>เลือกตำบล</option>
+                                        <option
+                                            v-for="subDistrict in subDistrictsForRegister"
+                                            :key="subDistrict"
+                                            :value="subDistrict">
+                                            {{ subDistrict }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <button type="submit"
+                                    class="btn btn-primary w-100"
+                                    :disabled="loading">ลงทะเบียน</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Modal -->
+            <div v-if="showLoginForm" class="modal d-block" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">เข้าสู่ระบบ</h5>
+                            <button @click="closeLoginForm"
+                                class="btn-close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form @submit.prevent="login">
+                                <div class="mb-3">
+                                    <label class="form-label">ชื่อผู้ใช้</label>
+                                    <input v-model="loginForm.username"
+                                        type="text" class="form-control"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">รหัสผ่าน</label>
+                                    <input v-model="loginForm.password"
+                                        type="password" class="form-control"
+                                        required>
+                                </div>
+                                <button type="submit"
+                                    class="btn btn-primary w-100"
+                                    :disabled="loading">เข้าสู่ระบบ</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Section -->
+            <div v-if="isLoggedIn" class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">ข้อมูลผู้ใช้</h5>
+                </div>
+                <div class="card-body">
+                    <form @submit.prevent="updateProfile">
+                        <div class="mb-3">
+                            <label class="form-label">อีเมล</label>
+                            <input v-model="profile.email" type="email"
+                                class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">จังหวัด</label>
+                            <select v-model="profile.province"
+                                @change="loadDistrictsForProfile"
+                                class="form-select" required>
+                                <option value>เลือกจังหวัด</option>
+                                <option v-for="province in provinces"
+                                    :key="province" :value="province">
+                                    {{ province }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">อำเภอ</label>
+                            <select v-model="profile.district"
+                                @change="loadSubDistrictsForProfile"
+                                class="form-select" required
+                                :disabled="!profile.province">
+                                <option value>เลือกอำเภอ</option>
+                                <option v-for="district in districtsForProfile"
+                                    :key="district" :value="district">
+                                    {{ district }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ตำบล</label>
+                            <select v-model="profile.sub_district"
+                                class="form-select" required
+                                :disabled="!profile.district">
+                                <option value>เลือกตำบล</option>
+                                <option
+                                    v-for="subDistrict in subDistrictsForProfile"
+                                    :key="subDistrict" :value="subDistrict">
+                                    {{ subDistrict }}
+                                </option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary"
+                            :disabled="loading">บันทึกข้อมูล</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        const { createApp } = Vue
+        
+        // สร้าง Axios instance
+        const api = axios.create({
+            baseURL: 'https://express-test-api-mocha.vercel.app',
+            timeout: 10000
+        });
+
+        createApp({
+            data() {
+                return {
+                    loading: false,
+                    isLoggedIn: false,
+                    showLoginForm: false,
+                    showRegisterForm: false,
+                    username: '',
+                    provinces: [],
+                    
+                    // ฟอร์มลงทะเบียน
+                    registerForm: {
+                        username: '',
+                        password: '',
+                        email: '',
+                        province: '',
+                        district: '',
+                        sub_district: ''
+                    },
+                    districtsForRegister: [],
+                    subDistrictsForRegister: [],
+
+                    // ฟอร์มล็อกอิน
+                    loginForm: {
+                        username: '',
+                        password: ''
+                    },
+
+                    // โปรไฟล์
+                    profile: {
+                        email: '',
+                        province: '',
+                        district: '',
+                        sub_district: ''
+                    },
+                    districtsForProfile: [],
+                    subDistrictsForProfile: []
+                }
+            },
+            methods: {
+                // โหลดข้อมูลจังหวัด
+                async loadProvinces() {
+                    try {
+                        this.loading = true;
+                        const response = await api.get('/provinces');
+                        this.provinces = response.data;
+                    } catch (error) {
+                        this.showError('ไม่สามารถโหลดข้อมูลจังหวัดได้');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // การลงทะเบียน
+                async loadDistrictsForRegister() {
+                    if (!this.registerForm.province) return;
+                    try {
+                        this.loading = true;
+                        const response = await api.get(`/provinces/${encodeURIComponent(this.registerForm.province)}`);
+                        this.districtsForRegister = response.data;
+                        this.registerForm.district = '';
+                        this.registerForm.sub_district = '';
+                    } catch (error) {
+                        this.showError('ไม่สามารถโหลดข้อมูลอำเภอได้');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async loadSubDistrictsForRegister() {
+                    if (!this.registerForm.district) return;
+                    try {
+                        this.loading = true;
+                        const response = await api.get(
+                            `/provinces/${encodeURIComponent(this.registerForm.province)}/${encodeURIComponent(this.registerForm.district)}`
+                        );
+                        this.subDistrictsForRegister = response.data;
+                        this.registerForm.sub_district = '';
+                    } catch (error) {
+                        this.showError('ไม่สามารถโหลดข้อมูลตำบลได้');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async register() {
+                    try {
+                        this.loading = true;
+                        const response = await api.post('/register', this.registerForm);
+                        this.showSuccess('ลงทะเบียนสำเร็จ');
+                        this.closeRegisterForm();
+                    } catch (error) {
+                        this.showError('ลงทะเบียนไม่สำเร็จ: ' + (error.response?.data?.message || 'กรุณาลองใหม่อีกครั้ง'));
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // การเข้าสู่ระบบ
+                async login() {
+                    try {
+                        this.loading = true;
+                        const response = await api.post('/login', this.loginForm);
+                        localStorage.setItem('token', response.data.token);
+                        this.isLoggedIn = true;
+                        this.username = response.data.user.username;
+                        this.closeLoginForm();
+                        await this.fetchProfile();
+                        this.showSuccess('เข้าสู่ระบบสำเร็จ');
+                    } catch (error) {
+                        this.showError('เข้าสู่ระบบไม่สำเร็จ: ' + (error.response?.data?.message || 'กรุณาลองใหม่อีกครั้ง'));
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // โปรไฟล์
+                async fetchProfile() {
+                    try {
+                        const token = localStorage.getItem('token');
+                        if (!token) return;
+                        
+                        const response = await api.get('/profile', {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+                        this.profile = response.data;
+                        
+                        if (this.profile.province) {
+                            await this.loadDistrictsForProfile();
+                        }
+                        if (this.profile.district) {
+                            await this.loadSubDistrictsForProfile();
+                        }
+                    } catch (error) {
+                        this.showError('ไม่สามารถโหลดข้อมูลผู้ใช้ได้');
+                    }
+                },
+
+                async loadDistrictsForProfile() {
+                    if (!this.profile.province) return;
+                    try {
+                        this.loading = true;
+                        const response = await api.get(`/provinces/${encodeURIComponent(this.profile.province)}`);
+                        this.districtsForProfile = response.data;
+                    } catch (error) {
+                        this.showError('ไม่สามารถโหลดข้อมูลอำเภอได้');
+                    } finally {
+                        this.loading = false;
+                    }
+                },async loadSubDistrictsForProfile() {
+                    if (!this.profile.district) return;
+                    try {
+                        this.loading = true;
+                        const response = await api.get(
+                            `/provinces/${encodeURIComponent(this.profile.province)}/${encodeURIComponent(this.profile.district)}`
+                        );
+                        this.subDistrictsForProfile = response.data;
+                    } catch (error) {
+                        this.showError('ไม่สามารถโหลดข้อมูลตำบลได้');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async updateProfile() {
+                    try {
+                        this.loading = true;
+                        const token = localStorage.getItem('token');
+                        if (!token) throw new Error('ไม่พบ Token');
+
+                        await api.put('/profile', this.profile, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+                        this.showSuccess('อัพเดทข้อมูลสำเร็จ');
+                    } catch (error) {
+                        this.showError('ไม่สามารถอัพเดทข้อมูลได้: ' + (error.response?.data?.message || 'กรุณาลองใหม่อีกครั้ง'));
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // Utility methods
+                logout() {
+                    localStorage.removeItem('token');
+                    this.isLoggedIn = false;
+                    this.username = '';
+                    this.profile = {
+                        email: '',
+                        province: '',
+                        district: '',
+                        sub_district: ''
+                    };
+                    this.showSuccess('ออกจากระบบสำเร็จ');
+                },
+
+                closeLoginForm() {
+                    this.showLoginForm = false;
+                    this.loginForm = {
+                        username: '',
+                        password: ''
+                    };
+                },
+
+                closeRegisterForm() {
+                    this.showRegisterForm = false;
+                    this.registerForm = {
+                        username: '',
+                        password: '',
+                        email: '',
+                        province: '',
+                        district: '',
+                        sub_district: ''
+                    };
+                },
+
+                showError(message) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ข้อผิดพลาด',
+                        text: message,
+                        confirmButtonText: 'ตกลง'
+                    });
+                },
+
+                showSuccess(message) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ',
+                        text: message,
+                        confirmButtonText: 'ตกลง'
+                    });
+                }
+            },
+            async mounted() {
+                // เช็ค token และโหลดข้อมูลเริ่มต้น
+                const token = localStorage.getItem('token');
+                if (token) {
+                    this.isLoggedIn = true;
+                    await this.fetchProfile();
+                }
+                
+                // โหลดข้อมูลจังหวัด
+                await this.loadProvinces();
+            },
+            watch: {
+                // เพิ่ม Authorization header สำหรับทุก request เมื่อมี token
+                isLoggedIn(newVal) {
+                    if (newVal) {
+                        const token = localStorage.getItem('token');
+                        if (token) {
+                            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                        }
+                    } else {
+                        delete api.defaults.headers.common['Authorization'];
+                    }
+                }
+            }
+        }).mount('#app')
+    </script>
+
+        <style>
+        .modal {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+    </body>
+</html>
