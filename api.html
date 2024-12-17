@@ -11,71 +11,222 @@
         <script
             src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap"
+            rel="stylesheet">
     </head>
-    <body>
-        <div id="app" class="container mt-4">
-            <!-- Navigation -->
-            <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-                <div class="container-fluid">
-                    <span class="navbar-brand">ระบบจัดการข้อมูลที่อยู่</span>
-                    <div class="d-flex">
-                        <button v-if="!isLoggedIn" @click="showLoginForm = true"
-                            class="btn btn-outline-primary me-2">เข้าสู่ระบบ</button>
-                        <button v-if="!isLoggedIn"
-                            @click="showRegisterForm = true"
-                            class="btn btn-primary">ลงทะเบียน</button>
-                        <div v-if="isLoggedIn"
-                            class="d-flex align-items-center">
+    <body class="bg-dark">
+        <div id="app" class="min-vh-100 d-flex flex-column">
+            <!-- Navbar -->
+            <nav class="navbar navbar-dark bg-dark mb-4">
+                <div class="container">
+                    <span class="navbar-brand fw-bold">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        ระบบจัดการข้อมูลที่อยู่
+                    </span>
+                    <div class="d-flex align-items-center">
+                        <div v-if="!isLoggedIn">
+                            <button @click="showLoginForm = true"
+                                class="btn btn-outline-light me-2">
+                                <i
+                                    class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบ
+                            </button>
+                            <button @click="showRegisterForm = true"
+                                class="btn btn-primary">
+                                <i class="fas fa-user-plus me-2"></i>ลงทะเบียน
+                            </button>
+                        </div>
+                        <div v-else
+                            class="text-white d-flex align-items-center">
+                            <i class="fas fa-user-circle me-2 fs-4"></i>
                             <span class="me-3">สวัสดี, {{ username }}</span>
-                            <button @click="logout"
-                                class="btn btn-outline-danger">ออกจากระบบ</button>
+                            <button @click="logout" class="btn btn-danger">
+                                <i
+                                    class="fas fa-sign-out-alt me-2"></i>ออกจากระบบ
+                            </button>
                         </div>
                     </div>
                 </div>
             </nav>
 
-            <!-- Loading Indicator -->
-            <div v-if="loading"
-                class="position-fixed top-50 start-50 translate-middle">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">กำลังโหลด...</span>
+            <!-- Main Content -->
+            <div v-if="!isLoggedIn"
+                class="container flex-grow-1 d-flex align-items-center justify-content-center">
+                <div class="text-center text-white">
+                    <h1 class="mb-4"><i
+                            class="fas fa-home me-2"></i>ยินดีต้อนรับ</h1>
+                    <p
+                        class="mb-4">กรุณาเข้าสู่ระบบหรือลงทะเบียนเพื่อจัดการข้อมูลที่อยู่ของคุณ</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button @click="showLoginForm = true"
+                            class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบ
+                        </button>
+                        <button @click="showRegisterForm = true"
+                            class="btn btn-primary btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>ลงทะเบียน
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Section -->
+            <div v-if="isLoggedIn" class="container mt-4">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="card bg-dark text-white border-secondary">
+                            <div class="card-header border-secondary">
+                                <h5 class="mb-0">
+                                    <i
+                                        class="fas fa-user-circle me-2"></i>ข้อมูลผู้ใช้
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form @submit.prevent="updateProfile">
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i
+                                                class="fas fa-envelope me-2"></i>อีเมล
+                                        </label>
+                                        <input v-model="profile.email"
+                                            type="email"
+                                            class="form-control bg-dark text-white"
+                                            required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i
+                                                class="fas fa-map-marker-alt me-2"></i>จังหวัด
+                                        </label>
+                                        <select v-model="profile.province"
+                                            @change="loadDistrictsForProfile"
+                                            class="form-select bg-dark text-white"
+                                            required>
+                                            <option value>เลือกจังหวัด</option>
+                                            <option
+                                                v-for="province in provinces"
+                                                :key="province"
+                                                :value="province">
+                                                {{ province }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i
+                                                class="fas fa-city me-2"></i>อำเภอ
+                                        </label>
+                                        <select v-model="profile.district"
+                                            @change="loadSubDistrictsForProfile"
+                                            class="form-select bg-dark text-white"
+                                            required
+                                            :disabled="!profile.province">
+                                            <option value>เลือกอำเภอ</option>
+                                            <option
+                                                v-for="district in districtsForProfile"
+                                                :key="district"
+                                                :value="district">
+                                                {{ district }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label">
+                                            <i
+                                                class="fas fa-building me-2"></i>ตำบล
+                                        </label>
+                                        <select v-model="profile.sub_district"
+                                            class="form-select bg-dark text-white"
+                                            required
+                                            :disabled="!profile.district">
+                                            <option value>เลือกตำบล</option>
+                                            <option
+                                                v-for="subDistrict in subDistrictsForProfile"
+                                                :key="subDistrict"
+                                                :value="subDistrict">
+                                                {{ subDistrict }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <button type="submit"
+                                        class="btn btn-primary">
+                                        <i
+                                            class="fas fa-save me-2"></i>บันทึกข้อมูล
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div v-if="loading" class="position-fixed top-0 start-0 w-100 h-100"
+                style="background: rgba(0,0,0,0.7); z-index: 9999;">
+                <div class="position-absolute top-50 start-50 translate-middle">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">กำลังโหลด...</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Register Modal -->
-            <div v-if="showRegisterForm" class="modal d-block" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">ลงทะเบียน</h5>
-                            <button @click="closeRegisterForm"
-                                class="btn-close"></button>
+            <div v-if="showRegisterForm" class="modal" tabindex="-1"
+                style="display: block; background: rgba(0,0,0,0.7);">
+                <div class="modal-dialog modal-dialog-centered" @click.stop>
+                    <div
+                        class="modal-content bg-dark text-white border-secondary">
+                        <div class="modal-header border-secondary">
+                            <h5 class="modal-title">
+                                <i class="fas fa-user-plus me-2"></i>ลงทะเบียน
+                            </h5>
+                            <button type="button"
+                                class="btn-close btn-close-white"
+                                @click="closeRegisterForm"></button>
                         </div>
                         <div class="modal-body">
                             <form @submit.prevent="register">
                                 <div class="mb-3">
-                                    <label class="form-label">ชื่อผู้ใช้</label>
+                                    <label class="form-label">
+                                        <i
+                                            class="fas fa-user me-2"></i>ชื่อผู้ใช้
+                                    </label>
                                     <input v-model="registerForm.username"
-                                        type="text" class="form-control"
+                                        type="text"
+                                        class="form-control bg-dark text-white"
                                         required>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">รหัสผ่าน</label>
+                                    <label class="form-label">
+                                        <i class="fas fa-lock me-2"></i>รหัสผ่าน
+                                    </label>
                                     <input v-model="registerForm.password"
-                                        type="password" class="form-control"
+                                        type="password"
+                                        class="form-control bg-dark text-white"
                                         required>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">อีเมล</label>
+                                    <label class="form-label">
+                                        <i
+                                            class="fas fa-envelope me-2"></i>อีเมล
+                                    </label>
                                     <input v-model="registerForm.email"
-                                        type="email" class="form-control"
+                                        type="email"
+                                        class="form-control bg-dark text-white"
                                         required>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">จังหวัด</label>
+                                    <label class="form-label">
+                                        <i
+                                            class="fas fa-map-marker-alt me-2"></i>จังหวัด
+                                    </label>
                                     <select v-model="registerForm.province"
                                         @change="loadDistrictsForRegister"
-                                        class="form-select" required>
+                                        class="form-select bg-dark text-white"
+                                        required>
                                         <option value>เลือกจังหวัด</option>
                                         <option v-for="province in provinces"
                                             :key="province" :value="province">
@@ -84,10 +235,13 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">อำเภอ</label>
+                                    <label class="form-label">
+                                        <i class="fas fa-city me-2"></i>อำเภอ
+                                    </label>
                                     <select v-model="registerForm.district"
                                         @change="loadSubDistrictsForRegister"
-                                        class="form-select" required
+                                        class="form-select bg-dark text-white"
+                                        required
                                         :disabled="!registerForm.province">
                                         <option value>เลือกอำเภอ</option>
                                         <option
@@ -97,10 +251,12 @@
                                         </option>
                                     </select>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">ตำบล</label>
+                                <div class="mb-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-building me-2"></i>ตำบล
+                                    </label>
                                     <select v-model="registerForm.sub_district"
-                                        class="form-select"
+                                        class="form-select bg-dark text-white"
                                         required
                                         :disabled="!registerForm.district">
                                         <option value>เลือกตำบล</option>
@@ -113,8 +269,10 @@
                                     </select>
                                 </div>
                                 <button type="submit"
-                                    class="btn btn-primary w-100"
-                                    :disabled="loading">ลงทะเบียน</button>
+                                    class="btn btn-primary w-100">
+                                    <i
+                                        class="fas fa-user-plus me-2"></i>ลงทะเบียน
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -122,103 +280,102 @@
             </div>
 
             <!-- Login Modal -->
-            <div v-if="showLoginForm" class="modal d-block" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">เข้าสู่ระบบ</h5>
-                            <button @click="closeLoginForm"
-                                class="btn-close"></button>
+            <div v-if="showLoginForm" class="modal" tabindex="-1"
+                style="display: block; background: rgba(0,0,0,0.7);">
+                <div class="modal-dialog modal-dialog-centered" @click.stop>
+                    <div
+                        class="modal-content bg-dark text-white border-secondary">
+                        <div class="modal-header border-secondary">
+                            <h5 class="modal-title">
+                                <i
+                                    class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบ
+                            </h5>
+                            <button type="button"
+                                class="btn-close btn-close-white"
+                                @click="closeLoginForm"></button>
                         </div>
                         <div class="modal-body">
                             <form @submit.prevent="login">
                                 <div class="mb-3">
-                                    <label class="form-label">ชื่อผู้ใช้</label>
+                                    <label class="form-label">
+                                        <i
+                                            class="fas fa-user me-2"></i>ชื่อผู้ใช้
+                                    </label>
                                     <input v-model="loginForm.username"
-                                        type="text" class="form-control"
+                                        type="text"
+                                        class="form-control bg-dark text-white"
                                         required>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">รหัสผ่าน</label>
+                                <div class="mb-4">
+                                    <label class="form-label">
+                                        <i class="fas fa-lock me-2"></i>รหัสผ่าน
+                                    </label>
                                     <input v-model="loginForm.password"
-                                        type="password" class="form-control"
+                                        type="password"
+                                        class="form-control bg-dark text-white"
                                         required>
                                 </div>
                                 <button type="submit"
-                                    class="btn btn-primary w-100"
-                                    :disabled="loading">เข้าสู่ระบบ</button>
+                                    class="btn btn-primary w-100">
+                                    <i
+                                        class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบ
+                                </button>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Profile Section -->
-            <div v-if="isLoggedIn" class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">ข้อมูลผู้ใช้</h5>
-                </div>
-                <div class="card-body">
-                    <form @submit.prevent="updateProfile">
-                        <div class="mb-3">
-                            <label class="form-label">อีเมล</label>
-                            <input v-model="profile.email" type="email"
-                                class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">จังหวัด</label>
-                            <select v-model="profile.province"
-                                @change="loadDistrictsForProfile"
-                                class="form-select" required>
-                                <option value>เลือกจังหวัด</option>
-                                <option v-for="province in provinces"
-                                    :key="province" :value="province">
-                                    {{ province }}
-                                </option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">อำเภอ</label>
-                            <select v-model="profile.district"
-                                @change="loadSubDistrictsForProfile"
-                                class="form-select" required
-                                :disabled="!profile.province">
-                                <option value>เลือกอำเภอ</option>
-                                <option v-for="district in districtsForProfile"
-                                    :key="district" :value="district">
-                                    {{ district }}
-                                </option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">ตำบล</label>
-                            <select v-model="profile.sub_district"
-                                class="form-select" required
-                                :disabled="!profile.district">
-                                <option value>เลือกตำบล</option>
-                                <option
-                                    v-for="subDistrict in subDistrictsForProfile"
-                                    :key="subDistrict" :value="subDistrict">
-                                    {{ subDistrict }}
-                                </option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary"
-                            :disabled="loading">บันทึกข้อมูล</button>
-                    </form>
-                </div>
-            </div>
         </div>
+
+        <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: #1a1e21;
+        }
+
+        .form-control, .form-select {
+            border-color: #495057;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #2b3035;
+            border-color: #0d6efd;
+            color: white;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .form-control option, .form-select option {
+            background-color: #212529;
+            color: white;
+        }
+
+        .modal {
+            z-index: 1050;
+        }
+
+        .btn {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+            transform: none;
+        }
+    </style>
 
         <script>
         const { createApp } = Vue
         
-        // สร้าง Axios instance
         const api = axios.create({
             baseURL: 'https://express-test-api-l0zc.onrender.com',
             timeout: 10000
         });
-
         createApp({
             data() {
                 return {
@@ -228,8 +385,6 @@
                     showRegisterForm: false,
                     username: '',
                     provinces: [],
-                    
-                    // ฟอร์มลงทะเบียน
                     registerForm: {
                         username: '',
                         password: '',
@@ -240,14 +395,10 @@
                     },
                     districtsForRegister: [],
                     subDistrictsForRegister: [],
-
-                    // ฟอร์มล็อกอิน
                     loginForm: {
                         username: '',
                         password: ''
                     },
-
-                    // โปรไฟล์
                     profile: {
                         email: '',
                         province: '',
@@ -259,7 +410,6 @@
                 }
             },
             methods: {
-                // โหลดข้อมูลจังหวัด
                 async loadProvinces() {
                     try {
                         this.loading = true;
@@ -271,8 +421,6 @@
                         this.loading = false;
                     }
                 },
-
-                // การลงทะเบียน
                 async loadDistrictsForRegister() {
                     if (!this.registerForm.province) return;
                     try {
@@ -287,7 +435,6 @@
                         this.loading = false;
                     }
                 },
-
                 async loadSubDistrictsForRegister() {
                     if (!this.registerForm.district) return;
                     try {
@@ -303,7 +450,6 @@
                         this.loading = false;
                     }
                 },
-
                 async register() {
                     try {
                         this.loading = true;
@@ -316,8 +462,6 @@
                         this.loading = false;
                     }
                 },
-
-                // การเข้าสู่ระบบ
                 async login() {
                     try {
                         this.loading = true;
@@ -334,8 +478,6 @@
                         this.loading = false;
                     }
                 },
-
-                // โปรไฟล์
                 async fetchProfile() {
                     try {
                         const token = localStorage.getItem('token');
@@ -356,7 +498,6 @@
                         this.showError('ไม่สามารถโหลดข้อมูลผู้ใช้ได้');
                     }
                 },
-
                 async loadDistrictsForProfile() {
                     if (!this.profile.province) return;
                     try {
@@ -368,7 +509,8 @@
                     } finally {
                         this.loading = false;
                     }
-                },async loadSubDistrictsForProfile() {
+                },
+                async loadSubDistrictsForProfile() {
                     if (!this.profile.district) return;
                     try {
                         this.loading = true;
@@ -382,7 +524,6 @@
                         this.loading = false;
                     }
                 },
-
                 async updateProfile() {
                     try {
                         this.loading = true;
@@ -399,8 +540,6 @@
                         this.loading = false;
                     }
                 },
-
-                // Utility methods
                 logout() {
                     localStorage.removeItem('token');
                     this.isLoggedIn = false;
@@ -413,7 +552,6 @@
                     };
                     this.showSuccess('ออกจากระบบสำเร็จ');
                 },
-
                 closeLoginForm() {
                     this.showLoginForm = false;
                     this.loginForm = {
@@ -421,7 +559,6 @@
                         password: ''
                     };
                 },
-
                 closeRegisterForm() {
                     this.showRegisterForm = false;
                     this.registerForm = {
@@ -433,38 +570,37 @@
                         sub_district: ''
                     };
                 },
-
                 showError(message) {
                     Swal.fire({
                         icon: 'error',
                         title: 'ข้อผิดพลาด',
                         text: message,
-                        confirmButtonText: 'ตกลง'
+                        confirmButtonText: 'ตกลง',
+                        background: '#212529',
+                        color: '#fff'
                     });
                 },
-
                 showSuccess(message) {
                     Swal.fire({
                         icon: 'success',
                         title: 'สำเร็จ',
                         text: message,
-                        confirmButtonText: 'ตกลง'
+                        confirmButtonText: 'ตกลง',
+                        background: '#212529',
+                        color: '#fff'
                     });
                 }
             },
             async mounted() {
-                // เช็ค token และโหลดข้อมูลเริ่มต้น
                 const token = localStorage.getItem('token');
                 if (token) {
                     this.isLoggedIn = true;
+                    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
                     await this.fetchProfile();
                 }
-                
-                // โหลดข้อมูลจังหวัด
                 await this.loadProvinces();
             },
             watch: {
-                // เพิ่ม Authorization header สำหรับทุก request เมื่อมี token
                 isLoggedIn(newVal) {
                     if (newVal) {
                         const token = localStorage.getItem('token');
@@ -478,18 +614,4 @@
             }
         }).mount('#app')
     </script>
-
-        <style>
-        .modal {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        .form-label {
-            font-weight: 500;
-        }
-        .spinner-border {
-            width: 3rem;
-            height: 3rem;
-        }
-    </style>
-    </body>
-</html>
+    </html>
